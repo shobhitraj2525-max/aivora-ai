@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum CreationType {
+  VIDEO
+  IMAGE
+  AUDIO
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  credits   Int      @default(50)
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  creations       Creation[]
+  creditTransactions CreditTransaction[]
+}
+
+model Creation {
+  id        String       @id @default(cuid())
+  type      CreationType
+  prompt    String
+  resultUrl String
+  cost      Int
+  createdAt DateTime     @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CreditTransaction {
+  id        String   @id @default(cuid())
+  amount    Int
+  type      String
+  description String?
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
